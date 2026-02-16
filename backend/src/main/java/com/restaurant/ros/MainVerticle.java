@@ -49,8 +49,15 @@ public class MainVerticle extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
 
         router.post("/api/orders").handler(ctx -> {
-            try {
-                OrderTicket ticket = ctx.body().asPojo(OrderTicket.class);
+            io.vertx.core.buffer.Buffer body = ctx.body().buffer();
+            vertx.executeBlocking(() -> {
+                try {
+                    if (body == null) return null;
+                    return Json.decodeValue(body, OrderTicket.class);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }).onSuccess(ticket -> {
                 if (ticket == null) {
                     ctx.response().setStatusCode(400).end("Invalid JSON");
                     return;
@@ -64,10 +71,10 @@ public class MainVerticle extends AbstractVerticle {
                     .onFailure(err -> {
                         ctx.response().setStatusCode(500).end(err.getMessage());
                     });
-            } catch (Exception e) {
-                e.printStackTrace();
-                ctx.response().setStatusCode(400).end("Invalid Order: " + e.getMessage());
-            }
+            }).onFailure(err -> {
+                err.printStackTrace();
+                ctx.response().setStatusCode(400).end("Invalid Order: " + err.getMessage());
+            });
         });
 
         router.post("/api/pay").handler(ctx -> {

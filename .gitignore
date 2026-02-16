@@ -1,0 +1,6 @@
+backend/target/
+backend/rocksdb_data/
+backend/rocksdb_backups/
+*.tmp
+.DS_Store
+*.log
