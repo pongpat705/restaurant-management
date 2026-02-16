@@ -37,6 +37,12 @@ public class MainVerticle extends AbstractVerticle {
              .onFailure(err -> System.err.println("Failed to deploy KitchenVerticle: " + err.getMessage()))
              .onSuccess(id -> System.out.println("Deployed KitchenVerticle with Virtual Threads: " + id));
 
+        // Deploy Payment Verticle (Virtual Threads for External API)
+        vertx.deployVerticle(new PaymentVerticle(), new DeploymentOptions().setThreadingModel(ThreadingModel.VIRTUAL_THREAD));
+
+        // Deploy Inventory Verticle
+        vertx.deployVerticle(new InventoryVerticle());
+
         HttpServer server = vertx.createHttpServer();
         Router router = Router.router(vertx);
 
@@ -62,6 +68,13 @@ public class MainVerticle extends AbstractVerticle {
                 e.printStackTrace();
                 ctx.response().setStatusCode(400).end("Invalid Order: " + e.getMessage());
             }
+        });
+
+        router.post("/api/pay").handler(ctx -> {
+            String orderId = ctx.body().asString(); // Simplification
+            vertx.eventBus().request("billing.payment", orderId)
+                .onSuccess(reply -> ctx.response().end((String) reply.body()))
+                .onFailure(err -> ctx.response().setStatusCode(500).end(err.getMessage()));
         });
 
         server.webSocketHandler(ws -> {
