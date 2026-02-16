@@ -14,7 +14,7 @@
             }]
         });
         customization = '';
-        alert('Order Placed!');
+        store.addNotification('Order Placed!', 'success');
     }
 </script>
 

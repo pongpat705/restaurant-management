@@ -3,6 +3,7 @@
     import ChefView from './ChefView.svelte';
     import TableMap from './TableMap.svelte';
     import Customizer from './Customizer.svelte';
+    import Notification from './Notification.svelte';
 
     let roles = ['Host', 'Waiter', 'Kitchen', 'Runner', 'Cashier', 'Busboy', 'Dishwasher'];
 
@@ -14,6 +15,7 @@
 </script>
 
 <main>
+    <Notification />
     <header>
         <h1>Restaurant OS</h1>
         <div class="role-selector">

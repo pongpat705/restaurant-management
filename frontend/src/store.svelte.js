@@ -1,6 +1,7 @@
 let socket;
 let orders = $state([]);
 let role = $state('Host');
+let notifications = $state([]);
 
 function init() {
     if (socket) return;
@@ -41,6 +42,18 @@ export const store = {
     get orders() { return orders },
     get role() { return role },
     set role(value) { role = value },
+    get notifications() { return notifications },
+
+    addNotification(message, type = 'info') {
+        const id = Date.now();
+        notifications.push({ id, message, type });
+        setTimeout(() => {
+            const index = notifications.findIndex(n => n.id === id);
+            if (index !== -1) {
+                notifications.splice(index, 1);
+            }
+        }, 3000);
+    },
 
     addOrder(order) {
         fetch('/api/orders', {
