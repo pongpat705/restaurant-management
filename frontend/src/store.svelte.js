@@ -1,5 +1,6 @@
 let socket;
-let orders = $state([]);
+let ordersMap = $state(new Map());
+let orders = $derived(Array.from(ordersMap.values()));
 let role = $state('Host');
 
 function init() {
@@ -20,12 +21,7 @@ function init() {
         if (data.startsWith('UPDATE:')) {
             try {
                 const ticket = JSON.parse(data.substring(7));
-                const index = orders.findIndex(o => o.orderId === ticket.orderId);
-                if (index !== -1) {
-                    orders[index] = ticket;
-                } else {
-                    orders.push(ticket);
-                }
+                ordersMap.set(ticket.orderId, ticket);
             } catch (e) {
                 console.error('Error parsing update:', e);
             }
