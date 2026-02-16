@@ -3,6 +3,7 @@
     import ChefView from './ChefView.svelte';
     import TableMap from './TableMap.svelte';
     import Customizer from './Customizer.svelte';
+    import MenuManager from './MenuManager.svelte';
 
     let roles = ['Host', 'Waiter', 'Kitchen', 'Runner', 'Cashier', 'Busboy', 'Dishwasher'];
 
@@ -30,7 +31,10 @@
         {#if selectedRole === 'Kitchen'}
             <ChefView />
         {:else if selectedRole === 'Host'}
-            <TableMap />
+            <div class="host-layout">
+                <TableMap />
+                <MenuManager />
+            </div>
         {:else if selectedRole === 'Waiter'}
             <Customizer />
         {:else}

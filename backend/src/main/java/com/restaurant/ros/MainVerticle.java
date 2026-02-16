@@ -43,6 +43,9 @@ public class MainVerticle extends AbstractVerticle {
         // Deploy Inventory Verticle
         vertx.deployVerticle(new InventoryVerticle());
 
+        // Deploy Menu Verticle
+        vertx.deployVerticle(new MenuVerticle(dbService));
+
         HttpServer server = vertx.createHttpServer();
         Router router = Router.router(vertx);
 
@@ -77,6 +80,19 @@ public class MainVerticle extends AbstractVerticle {
                 .onFailure(err -> ctx.response().setStatusCode(500).end(err.getMessage()));
         });
 
+        // Menu Endpoints
+        router.get("/api/menu/active").handler(ctx -> {
+            vertx.eventBus().request("menu.get", "active")
+                .onSuccess(reply -> ctx.response().putHeader("content-type", "application/json").end((String) reply.body()))
+                .onFailure(err -> ctx.response().setStatusCode(404).end());
+        });
+
+        router.post("/api/menu").handler(ctx -> {
+            vertx.eventBus().request("menu.create", ctx.body().asString())
+                .onSuccess(reply -> ctx.response().end((String) reply.body()))
+                .onFailure(err -> ctx.response().setStatusCode(500).end(err.getMessage()));
+        });
+
         server.webSocketHandler(ws -> {
             if (ws.path().equals("/ws/updates")) {
                 var updatesConsumer = vertx.eventBus().consumer("orders.updates", msg -> {
@@ -89,12 +105,17 @@ public class MainVerticle extends AbstractVerticle {
                    }
                 });
 
+                var menuConsumer = vertx.eventBus().consumer("menu.updates", msg -> {
+                    ws.writeTextMessage("MENU:" + msg.body());
+                });
+
                 var grillConsumer = vertx.eventBus().consumer("kitchen.station.grill", msg -> {
                     ws.writeTextMessage("STATION:GRILL:" + msg.body());
                 });
 
                 ws.closeHandler(v -> {
                     updatesConsumer.unregister();
+                    menuConsumer.unregister();
                     grillConsumer.unregister();
                 });
             } else {

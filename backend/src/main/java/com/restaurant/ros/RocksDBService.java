@@ -80,6 +80,49 @@ public class RocksDBService {
         return orders;
     }
 
+    public void saveMenu(Menu menu) {
+        try {
+            byte[] key = ("menu:" + menu.id()).getBytes(StandardCharsets.UTF_8);
+            byte[] value = mapper.writeValueAsBytes(menu);
+            db.put(key, value);
+
+            if (menu.active()) {
+                db.put("menu:active".getBytes(StandardCharsets.UTF_8), value);
+            }
+        } catch (RocksDBException | IOException e) {
+            throw new RuntimeException("Failed to save menu", e);
+        }
+    }
+
+    public Menu getMenu(String id) {
+        try {
+            byte[] value = db.get(("menu:" + id).getBytes(StandardCharsets.UTF_8));
+            if (value == null) return null;
+            return mapper.readValue(value, Menu.class);
+        } catch (RocksDBException | IOException e) {
+            throw new RuntimeException("Failed to get menu", e);
+        }
+    }
+
+    public Menu getActiveMenu() {
+        try {
+            byte[] value = db.get("menu:active".getBytes(StandardCharsets.UTF_8));
+            if (value == null) return null;
+            return mapper.readValue(value, Menu.class);
+        } catch (RocksDBException | IOException e) {
+            System.err.println("Failed to get active menu: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public void deleteMenu(String id) {
+        try {
+            db.delete(("menu:" + id).getBytes(StandardCharsets.UTF_8));
+        } catch (RocksDBException e) {
+            throw new RuntimeException("Failed to delete menu", e);
+        }
+    }
+
     public void close() {
         if (db != null) db.close();
     }
