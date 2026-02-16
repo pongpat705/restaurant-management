@@ -13,8 +13,8 @@ import java.util.List;
 public class RocksDBService {
 
     private RocksDB db;
-    private final String dbPath = "rocksdb_data";
-    private final String backupPath = "rocksdb_backups";
+    private final String dbPath;
+    private final String backupPath;
     private final ObjectMapper mapper = new ObjectMapper();
 
     static {
@@ -22,6 +22,12 @@ public class RocksDBService {
     }
 
     public RocksDBService() {
+        this("rocksdb_data", "rocksdb_backups");
+    }
+
+    public RocksDBService(String dbPath, String backupPath) {
+        this.dbPath = dbPath;
+        this.backupPath = backupPath;
         try {
             final Options options = new Options().setCreateIfMissing(true);
             this.db = RocksDB.open(options, dbPath);
@@ -47,17 +53,20 @@ public class RocksDBService {
     }
 
     public void saveOrder(OrderTicket order) {
-        try {
+        try (final WriteBatch batch = new WriteBatch();
+             final WriteOptions writeOptions = new WriteOptions()) {
+
             byte[] key = ("order:" + order.orderId()).getBytes(StandardCharsets.UTF_8);
             byte[] value = mapper.writeValueAsBytes(order);
-            db.put(key, value);
+            batch.put(key, value);
 
             for (OrderTicket.OrderItem item : order.items()) {
                 if (item.station() != null) {
                     String indexKey = "station:" + item.station() + ":" + order.orderId();
-                    db.put(indexKey.getBytes(StandardCharsets.UTF_8), new byte[0]);
+                    batch.put(indexKey.getBytes(StandardCharsets.UTF_8), new byte[0]);
                 }
             }
+            db.write(writeOptions, batch);
         } catch (RocksDBException | IOException e) {
             throw new RuntimeException("Failed to save order", e);
         }
