@@ -1,0 +1,8 @@
+/app/backend/src/main/java/com/restaurant/ros/InventoryVerticle.java
+/app/backend/src/main/java/com/restaurant/ros/KitchenVerticle.java
+/app/backend/src/main/java/com/restaurant/ros/MainVerticle.java
+/app/backend/src/main/java/com/restaurant/ros/OrderState.java
+/app/backend/src/main/java/com/restaurant/ros/OrderTicket.java
+/app/backend/src/main/java/com/restaurant/ros/OrderTicketCodec.java
+/app/backend/src/main/java/com/restaurant/ros/PaymentVerticle.java
+/app/backend/src/main/java/com/restaurant/ros/RocksDBService.java
