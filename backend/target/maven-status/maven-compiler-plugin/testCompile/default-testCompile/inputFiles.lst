@@ -1,0 +1,2 @@
+/app/backend/src/test/java/com/restaurant/ros/MainVerticleTest.java
+/app/backend/src/test/java/com/restaurant/ros/OrderTicketCodecTest.java
